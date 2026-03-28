@@ -37,15 +37,20 @@ export async function spawnChatProcess({
 
     if (context.files.length > 0) {
       const fileContext = context.files
-        .map(
-          (f) =>
-            `### ${f.name} (${f.path})\n${f.prompt ? `Note: ${f.prompt}\n` : ""}\`\`\`\n${f.content}\n\`\`\``,
+        .map((f) =>
+          [
+            `File: ${f.path}`,
+            f.prompt ? `Context: ${f.prompt}` : "",
+            `\`\`\`\n${f.content}\n\`\`\``,
+          ]
+            .filter(Boolean)
+            .join("\n"),
         )
         .join("\n\n");
-      parts.push(`## Open Files\n${fileContext}`);
+      parts.push(`Open files:\n\n${fileContext}`);
     }
 
-    parts.push(`## Task\n${prompt}`);
+    parts.push(prompt);
     newPrompt = parts.join("\n\n");
   }
 
