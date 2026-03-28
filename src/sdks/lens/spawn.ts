@@ -32,19 +32,18 @@ export async function spawnChatProcess({
     ? `Available context: ${JSON.stringify(context)}; given prompt: ${prompt}`
     : prompt;
 
-  const result = await execa(
-    "lens",
-    [
-      "chat",
-      "--dev",
-      "--prompt",
-      newPrompt,
-      "--session",
-      session ?? crypto.randomUUID(),
-      forceAll ? "--force-all" : "",
-    ],
-    { reject: false },
-  );
+  const args = [
+    "chat",
+    "--dev",
+    "--prompt",
+    newPrompt,
+    "--session",
+    session ?? crypto.randomUUID(),
+  ];
+
+  if (forceAll) args.push("--force-all");
+
+  const result = await execa("lens", args, { reject: false });
 
   try {
     const data = JSON.parse(result.stdout);
