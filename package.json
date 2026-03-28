@@ -1,0 +1,27 @@
+{
+  "name": "@ridit/dev",
+  "version": "0.0.1",
+  "description": "One SDK, all CLIs.",
+  "author": "Ridit Jangra <riditjangra09@gmail.com> (https://ridit.space)",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ridit-jangra/dev"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "execa": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
