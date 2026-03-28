@@ -17,7 +17,10 @@ type ChatMessage = UserMessage | AssistantMessage;
 export class Chat {
   private messages: ChatMessage[] = [];
 
-  constructor(private session: string = crypto.randomUUID()) {}
+  constructor(
+    private session: string = crypto.randomUUID(),
+    private forceAll: boolean = false,
+  ) {}
 
   public async push(message: string, context?: Context) {
     this.messages.push({ message, context });
@@ -26,6 +29,7 @@ export class Chat {
       context,
       session: this.session,
       prompt: message,
+      forceAll: true,
     });
 
     this.messages.push({
