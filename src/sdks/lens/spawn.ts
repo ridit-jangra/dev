@@ -50,6 +50,7 @@ export async function spawnChatProcess({
     const data = JSON.parse(result.stdout);
     return data;
   } catch (err) {
+    console.log("error: ", err, "data", result.stdout);
     return { error: err, message: "", model: "", sessionId: "", tools: [] };
   }
 }
