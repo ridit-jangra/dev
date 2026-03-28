@@ -28,9 +28,26 @@ export async function spawnChatProcess({
   session,
   forceAll,
 }: ChatProcessProps): Promise<ChatProcessResult> {
-  const newPrompt = context
-    ? `Available context: ${JSON.stringify(context)}; given prompt: ${prompt}`
-    : prompt;
+  let newPrompt = prompt;
+
+  if (context) {
+    const parts: string[] = [];
+
+    if (context.prompt) parts.push(context.prompt);
+
+    if (context.files.length > 0) {
+      const fileContext = context.files
+        .map(
+          (f) =>
+            `### ${f.name} (${f.path})\n${f.prompt ? `Note: ${f.prompt}\n` : ""}\`\`\`\n${f.content}\n\`\`\``,
+        )
+        .join("\n\n");
+      parts.push(`## Open Files\n${fileContext}`);
+    }
+
+    parts.push(`## Task\n${prompt}`);
+    newPrompt = parts.join("\n\n");
+  }
 
   const args = [
     "chat",
@@ -43,7 +60,10 @@ export async function spawnChatProcess({
 
   if (forceAll) args.push("--force-all");
 
-  const result = await execa("lens", args, { reject: false });
+  const result = await execa("lens", args, {
+    reject: false,
+    cwd: context?.cwd,
+  });
 
   try {
     const data = JSON.parse(result.stdout);
