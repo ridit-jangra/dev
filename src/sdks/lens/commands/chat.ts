@@ -1,4 +1,4 @@
-import { spawnChatProcess, type Tool } from "../spawn";
+import { spawnChatProcess, type Tool, type ChatProcessResult } from "../spawn";
 import type { Context } from "../types/context";
 
 interface UserMessage {
@@ -22,14 +22,17 @@ export class Chat {
     private forceAll: boolean = false,
   ) {}
 
-  public async push(message: string, context?: Context) {
+  public async push(
+    message: string,
+    context?: Context,
+  ): Promise<ChatProcessResult> {
     this.messages.push({ message, context });
 
     const result = await spawnChatProcess({
       context,
       session: this.session,
       prompt: message,
-      forceAll: true,
+      forceAll: this.forceAll,
     });
 
     this.messages.push({
@@ -45,7 +48,7 @@ export class Chat {
     return this.messages;
   }
 
-  public async runTool(tool: Tool) {
+  public async runTool(tool: Tool): Promise<ChatProcessResult> {
     this.messages.push({ message: `Execute ${tool.tool}` });
 
     const result = await spawnChatProcess({
@@ -62,7 +65,7 @@ export class Chat {
 
     return result;
   }
-  public async skipTool(tool: Tool) {
+  public async skipTool(tool: Tool): Promise<ChatProcessResult> {
     this.messages.push({ message: `Execute tool ${tool.tool}` });
 
     const result = await spawnChatProcess({

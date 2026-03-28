@@ -14,7 +14,7 @@ export interface Tool {
   result: string;
 }
 
-interface ChatProcessResult {
+export interface ChatProcessResult {
   sessionId: string;
   message: string;
   model: string;

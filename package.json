@@ -1,6 +1,6 @@
 {
   "name": "@ridit/dev",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "One SDK, all CLIs.",
   "author": "Ridit Jangra <riditjangra09@gmail.com> (https://ridit.space)",
   "license": "MIT",
@@ -11,9 +11,15 @@
     "type": "git",
     "url": "https://github.com/ridit-jangra/dev"
   },
+  "exports": {
+    ".": "./src/index.ts",
+    "./lens": "./src/sdks/lens/index.ts"
+  },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
+    "build:bundle": "bun build src/index.ts --outdir dist --target node",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build": "bun run build:bundle && bun run build:types",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "execa": "^9.0.0"
