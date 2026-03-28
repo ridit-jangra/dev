@@ -4,6 +4,8 @@ One SDK, all CLIs.
 
 A TypeScript SDK for programmatically interacting with CLI tools like [Lens](https://github.com/ridit-jangra/lens).
 
+Used by [Meridia](https://github.com/ridit-jangra/Meridia).
+
 ## Installation
 
 ```bash
