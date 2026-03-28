@@ -7,7 +7,11 @@ A TypeScript SDK for programmatically interacting with CLI tools like [Lens](htt
 ## Installation
 
 ```bash
-bun install
+bun add @ridit/dev
+```
+
+```bash
+npm install @ridit/dev
 ```
 
 ## Usage
