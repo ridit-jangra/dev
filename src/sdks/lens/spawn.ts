@@ -3,10 +3,11 @@ import type { Context } from "./types/context";
 import { registeredTools } from "./tools/register";
 
 interface ChatProcessProps {
-  prompt: string;
+  prompt?: string;
   context?: Context;
   session?: string;
   forceAll?: boolean;
+  resume?: boolean;
   toolsPath?: string;
 }
 
@@ -16,12 +17,18 @@ export interface Tool {
   result: string;
 }
 
+export interface Permission {
+  tool: string;
+  description: string;
+}
+
 export interface ChatProcessResult {
   sessionId: string;
   message: string;
   model: string;
   tools: Tool[];
   error?: any;
+  permissionRequired?: Permission[];
 }
 
 export async function spawnChatProcess({
@@ -29,6 +36,7 @@ export async function spawnChatProcess({
   prompt,
   session,
   forceAll,
+  resume,
   toolsPath,
 }: ChatProcessProps): Promise<ChatProcessResult> {
   let newPrompt = prompt;
@@ -53,20 +61,20 @@ export async function spawnChatProcess({
       parts.push(`Open files:\n\n${fileContext}`);
     }
 
-    parts.push(prompt);
+    if (prompt) parts.push(prompt);
     newPrompt = parts.join("\n\n");
   }
 
   const args = [
     "chat",
     "--dev",
-    "--prompt",
-    newPrompt,
     "--session",
     session ?? crypto.randomUUID(),
   ];
 
+  if (newPrompt) args.push("--prompt", newPrompt);
   if (forceAll) args.push("--force-all");
+  if (resume) args.push("--resume");
   if (registeredTools.size > 0 && toolsPath)
     args.push("--runtime-tools", toolsPath);
 

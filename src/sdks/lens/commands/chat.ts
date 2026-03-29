@@ -1,5 +1,10 @@
 import { join } from "path";
-import { spawnChatProcess, type Tool, type ChatProcessResult } from "../spawn";
+import {
+  spawnChatProcess,
+  type Tool,
+  type ChatProcessResult,
+  type Permission,
+} from "../spawn";
 import type { Context } from "../types/context";
 import { homedir } from "os";
 import { registerRuntimeTool } from "../tools/register";
@@ -13,6 +18,7 @@ interface AssistantMessage {
   model: string;
   message: string;
   tools?: Tool[];
+  permission?: Permission[];
 }
 
 type ChatMessage = UserMessage | AssistantMessage;
@@ -66,13 +72,11 @@ export class Chat {
     return this.messages;
   }
 
-  public async runTool(tool: Tool): Promise<ChatProcessResult> {
-    this.messages.push({ message: `Execute ${tool.tool}` });
-
+  public async runTool(_tool: Tool): Promise<ChatProcessResult> {
     const result = await spawnChatProcess({
       session: this.session,
-      prompt: `Execute ${tool.tool}`,
       forceAll: true,
+      resume: true,
       toolsPath: this.runtimeToolsPath,
     });
 
@@ -80,6 +84,7 @@ export class Chat {
       model: result.model,
       message: result.message,
       tools: result.tools,
+      permission: result.permissionRequired,
     });
 
     return result;
