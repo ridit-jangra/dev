@@ -1,11 +1,13 @@
 import { execa } from "execa";
 import type { Context } from "./types/context";
+import { registeredTools } from "./tools/register";
 
 interface ChatProcessProps {
   prompt: string;
   context?: Context;
   session?: string;
   forceAll?: boolean;
+  toolsPath?: string;
 }
 
 export interface Tool {
@@ -27,6 +29,7 @@ export async function spawnChatProcess({
   prompt,
   session,
   forceAll,
+  toolsPath,
 }: ChatProcessProps): Promise<ChatProcessResult> {
   let newPrompt = prompt;
 
@@ -64,6 +67,8 @@ export async function spawnChatProcess({
   ];
 
   if (forceAll) args.push("--force-all");
+  if (registeredTools.size > 0 && toolsPath)
+    args.push("--runtime-tools", toolsPath);
 
   const result = await execa("lens", args, {
     reject: false,

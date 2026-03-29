@@ -1,5 +1,8 @@
+import { join } from "path";
 import { spawnChatProcess, type Tool, type ChatProcessResult } from "../spawn";
 import type { Context } from "../types/context";
+import { homedir } from "os";
+import { registerRuntimeTool } from "../tools/register";
 
 interface UserMessage {
   message: string;
@@ -20,6 +23,11 @@ export class Chat {
   constructor(
     private session: string = crypto.randomUUID(),
     private forceAll: boolean = false,
+    private runtimeToolsPath: string = join(
+      homedir(),
+      ".lens",
+      "runtime-tools.json",
+    ),
   ) {}
 
   public async push(
@@ -33,6 +41,7 @@ export class Chat {
       session: this.session,
       prompt: message,
       forceAll: this.forceAll,
+      toolsPath: this.runtimeToolsPath,
     });
 
     this.messages.push({
@@ -42,6 +51,15 @@ export class Chat {
     });
 
     return result;
+  }
+
+  public async registerTool(tool: {
+    name: string;
+    description: string;
+    parameters: Record<string, { type: string; description?: string }>;
+    onRun: (args: any) => Promise<any>;
+  }) {
+    await registerRuntimeTool(tool, this.runtimeToolsPath);
   }
 
   public getHistory(): ChatMessage[] {
@@ -55,6 +73,7 @@ export class Chat {
       session: this.session,
       prompt: `Execute ${tool.tool}`,
       forceAll: true,
+      toolsPath: this.runtimeToolsPath,
     });
 
     this.messages.push({
@@ -71,6 +90,7 @@ export class Chat {
     const result = await spawnChatProcess({
       session: this.session,
       prompt: `Skip tool ${tool.tool}`,
+      toolsPath: this.runtimeToolsPath,
     });
 
     this.messages.push({
