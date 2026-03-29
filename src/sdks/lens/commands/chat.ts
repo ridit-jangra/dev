@@ -96,6 +96,7 @@ export class Chat {
       session: this.session,
       prompt: `Skip tool ${tool.tool}`,
       toolsPath: this.runtimeToolsPath,
+      resume: true,
     });
 
     this.messages.push({
