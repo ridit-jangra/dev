@@ -2,7 +2,7 @@
 
 One SDK, all CLIs.
 
-A TypeScript SDK for programmatically interacting with CLI tools like [Lens](https://github.com/ridit-jangra/lens).
+A TypeScript SDK for programmatically interacting with [Milo](https://github.com/ridit-jangra/Milo) — the tiny cat coding agent.
 
 Used by [Meridia](https://github.com/ridit-jangra/Meridia).
 
@@ -18,70 +18,83 @@ npm install @ridit/dev
 
 ## Usage
 
-### Chat
+### Milo
 
-The `Chat` class lets you drive a Lens chat session programmatically, maintaining conversation history across turns.
+The `Milo` class lets you drive a Milo daemon session programmatically — streaming tool calls, permissions, and responses over SSE.
 
 ```ts
-import { Chat } from "@ridit/dev";
+import { Milo } from "@ridit/dev";
 
-const chat = new Chat();
+// auto-start the daemon if not running
+await Milo.start();
 
-const result = await chat.push("list all files");
-console.log(result.message);
+const milo = new Milo("agent");
 
-// With context
-const result2 = await chat.push("create main.py", {
-  cwd: "/my/project",
-  files: [],
+const text = await milo.chat("create a hello world app", (event) => {
+  if (event.type === "tool_call") console.log("calling", event.toolName);
+
+  if (event.type === "permission_request")
+    milo.resolvePermission(event.id, "allow");
 });
+
+console.log(text);
+await milo.disconnect();
 ```
 
 #### Constructor
 
 ```ts
-new Chat(session?: string, forceAll?: boolean)
+new Milo(mode?: Mode)
 ```
 
-| Parameter  | Type      | Default              | Description                          |
-|------------|-----------|----------------------|--------------------------------------|
-| `session`  | `string`  | `crypto.randomUUID()` | Session ID to resume or start        |
-| `forceAll` | `boolean` | `false`              | Auto-approve all tool calls          |
+| Parameter | Type   | Default   | Description                            |
+| --------- | ------ | --------- | -------------------------------------- |
+| `mode`    | `Mode` | `"agent"` | Session mode (`chat`, `agent`, `plan`) |
 
 #### Methods
 
-| Method                        | Description                                      |
-|-------------------------------|--------------------------------------------------|
-| `push(message, context?)`     | Send a message and get a response                |
-| `runTool(tool)`               | Execute a pending tool call                      |
-| `skipTool(tool)`              | Skip a pending tool call                         |
-| `getHistory()`                | Return the full message history                  |
-| `getSessionId()`              | Return the current session ID                    |
+| Method                                | Description                                          |
+| ------------------------------------- | ---------------------------------------------------- |
+| `connect()`                           | Create a new daemon session                          |
+| `disconnect()`                        | Delete the session and clean up                      |
+| `chat(prompt, onEvent?)`              | Send a message, stream SSE events, return final text |
+| `resolvePermission(permId, decision)` | Allow or deny a pending tool permission              |
+| `getSessionId()`                      | Return the current session ID                        |
+| `Milo.start(port?)`                   | Start the daemon if not already running              |
+| `Milo.isRunning()`                    | Check if the daemon is up                            |
+| `Milo.listSessions()`                 | List all active sessions                             |
 
-### Types
+#### Types
 
 ```ts
-import type { Context, Tool } from "@ridit/dev";
+import type { Mode, SSEEvent, PermissionDecision } from "@ridit/dev";
 
-interface Context {
-  cwd: string;
-  files: ContextFile[];
-  prompt?: string;
-}
+type Mode = "chat" | "agent" | "plan";
 
-interface ContextFile {
-  name: string;
-  path: string;
-  content: string;
-  prompt?: string;
-}
+type PermissionDecision = "allow" | "allow_session" | "deny";
 
-interface Tool {
-  tool: string;
-  args: Record<string, any>;
-  result: string;
-}
+type SSEEvent =
+  | { type: "tool_call"; id: string; toolName: string; args: unknown }
+  | { type: "tool_result"; id: string; toolName: string; result: unknown }
+  | { type: "permission_request"; id: string; tool: string; args: unknown }
+  | { type: "compacted" }
+  | { type: "done"; text: string }
+  | { type: "error"; message: string };
 ```
+
+---
+
+> **Note:** `Chat` (Lens-based) has been removed as of `0.2.4`. Migrate to `Milo`.
+
+## Requirements
+
+Milo daemon must be installed globally:
+
+```bash
+bun add -g @ridit/milo
+```
+
+Then either run `milo serve` manually, or call `Milo.start()` to auto-launch it.
 
 ## Development
 

@@ -23,6 +23,9 @@ interface AssistantMessage {
 
 type ChatMessage = UserMessage | AssistantMessage;
 
+/**
+ * @deprecated use `Milo` client instead.
+ */
 export class Chat {
   private messages: ChatMessage[] = [];
 

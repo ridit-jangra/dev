@@ -1,10 +1,15 @@
-import { Chat } from "./sdks/lens";
+import { Milo } from "./sdks/milo";
 
-const chat = new Chat("asdasdasd");
+await Milo.start();
 
-const toolRequest = await chat.push("create main.py'");
-console.log(toolRequest);
-toolRequest.tools.forEach(async (tool) => {
-  const toolExecution = await chat.runTool(tool);
-  console.log(toolExecution);
+const milo = new Milo("agent");
+
+const text = await milo.chat("create a hello world app", (event) => {
+  if (event.type === "tool_call") console.log("calling", event.toolName);
+
+  if (event.type === "permission_request")
+    milo.resolvePermission(event.id, "allow");
 });
+
+console.log(text);
+await milo.disconnect();
